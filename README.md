@@ -1,21 +1,22 @@
 # gitops-101
 
-Introduction to GitOps for Kubernetes using Argo CD and NGINX on a local Kubernetes cluster running in Docker Desktop on a MacBook Pro M1.
+Introduction to GitOps for Kubernetes using Argo CD and the Bitnami NGINX Helm chart on a local Kubernetes cluster running in Docker Desktop on a MacBook Pro M1.
 
 This tutorial will cover:
 
 - Installing Kubernetes locally with Docker Desktop
 - Installing Helm
 - Installing Argo CD
-- Creating a GitOps repository
-- Deploying an NGINX web server using Helm
+- Using the official Bitnami NGINX Helm chart
+- Deploying applications using GitOps
 - Syncing deployments automatically with Argo CD
-- Updating index.html through Git and letting Argo CD redeploy automatically
+- Updating configuration through Git and letting Argo CD redeploy automatically
 
 ---
 
 # Architecture
-```
+
+```text
 Git Repository
        │
        ▼
@@ -25,8 +26,9 @@ Git Repository
  Kubernetes Cluster
        │
        ▼
-    NGINX Pod
+ Bitnami NGINX
 ```
+
 Whenever changes are pushed to Git, Argo CD detects the changes and synchronizes the Kubernetes cluster automatically.
 
 ---
@@ -65,6 +67,13 @@ Verify Kubernetes is running:
 
 ```bash
 kubectl cluster-info
+```
+
+Expected output:
+
+```text
+Kubernetes control plane is running
+CoreDNS is running
 ```
 
 ---
@@ -141,7 +150,11 @@ Verify pods are running:
 kubectl get pods -n argocd
 ```
 
-Wait until all pods show STATUS = Running.
+Wait until all pods show:
+
+```text
+STATUS = Running
+```
 
 ---
 
@@ -170,69 +183,90 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 Login credentials:
 
+```text
 Username: admin
 Password: <output from command above>
+```
 
 ---
 
-# 10. Create GitOps Repository Structure
+# 10. Add Bitnami Helm Repository
 
-Example repository structure:
+Add the Bitnami Helm repository:
+
+```bash
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
+Update repositories:
+
+```bash
+helm repo update
+```
+
+Search available NGINX charts:
+
+```bash
+helm search repo nginx
+```
+
+You should see:
+
+```text
+bitnami/nginx
+```
+
+---
+
+# 11. Create GitOps Repository Structure
+
+Recommended structure:
 
 ```text
 gitops-101/
-├── charts/
-│   └── nginx/
-├── applications/
-│   └── nginx.yaml
+├── nginx/
+│   ├── values.yaml
+│   └── application.yaml
 └── README.md
 ```
 
 ---
 
-# 11. Create NGINX Helm Chart
+# 12. Create values.yaml
 
-Generate a Helm chart:
+Create:
 
-```bash
-mkdir charts
-cd charts
-
-helm create nginx
+```text
+nginx/values.yaml
 ```
-
----
-
-# 12. Modify NGINX index.html
-
-Create a ConfigMap for the custom HTML page.
 
 Example:
 
 ```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-html
-data:
-  index.html: |
-    <html>
-    <body>
-      <h1>Hello from GitOps 101</h1>
-    </body>
-    </html>
+service:
+  type: ClusterIP
+
+replicaCount: 1
+
+serverBlock: |
+  server {
+    listen 0.0.0.0:8080;
+    location / {
+      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD</h1></body></html>';
+    }
+  }
 ```
 
-Mount the ConfigMap into the NGINX container.
+This overrides the default NGINX configuration.
 
 ---
 
-# 13. Install NGINX Chart Locally
+# 13. Test Install Locally
 
-Test deployment:
+Install the chart manually first:
 
 ```bash
-helm install nginx ./charts/nginx
+helm install nginx bitnami/nginx -f nginx/values.yaml
 ```
 
 Verify:
@@ -244,9 +278,7 @@ kubectl get svc
 
 ---
 
-# 14. Expose NGINX
-
-Port forward the service:
+# 14. Port Forward NGINX
 
 ```bash
 kubectl port-forward svc/nginx 8081:80
@@ -256,22 +288,26 @@ Open:
 
 http://localhost:8081
 
+You should see:
+
+Hello from Bitnami NGINX via Argo CD
+
 ---
 
 # 15. Push Repository to GitHub
 
 Repository:
 
-https://github.com/aburayyanjeffry/gitops-101/
+https://github.com/aburayyanjeffry/gitops-101
 
-Push code:
+Push changes:
 
 ```bash
 git init
 
 git add .
 
-git commit -m "Initial GitOps setup"
+git commit -m "Add Bitnami nginx chart"
 
 git branch -M main
 
@@ -286,7 +322,9 @@ git push -u origin main
 
 Create:
 
-applications/nginx.yaml
+```text
+nginx/application.yaml
+```
 
 Content:
 
@@ -303,7 +341,7 @@ spec:
   source:
     repoURL: https://github.com/aburayyanjeffry/gitops-101.git
     targetRevision: main
-    path: charts/nginx
+    path: nginx
 
   destination:
     server: https://kubernetes.default.svc
@@ -318,7 +356,7 @@ spec:
 Apply:
 
 ```bash
-kubectl apply -f applications/nginx.yaml
+kubectl apply -f nginx/application.yaml
 ```
 
 ---
@@ -337,10 +375,22 @@ nginx → Healthy → Synced
 
 # 18. Test GitOps Workflow
 
-Modify index.html:
+Modify:
 
-```html
-<h1>GitOps is Awesome</h1>
+```text
+nginx/values.yaml
+```
+
+Change:
+
+```yaml
+Hello from Bitnami NGINX via Argo CD
+```
+
+to:
+
+```yaml
+GitOps deployment updated successfully
 ```
 
 Commit and push:
@@ -353,13 +403,7 @@ git commit -m "Update nginx homepage"
 git push
 ```
 
-Argo CD will automatically detect the change and redeploy NGINX.
-
-Refresh browser:
-
-http://localhost:8081
-
-You should see the updated page.
+Argo CD will detect the changes and redeploy automatically.
 
 ---
 
