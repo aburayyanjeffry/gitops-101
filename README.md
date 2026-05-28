@@ -15,7 +15,7 @@ This tutorial will cover:
 ---
 
 # Architecture
-
+```
 Git Repository
        │
        ▼
@@ -26,7 +26,7 @@ Git Repository
        │
        ▼
     NGINX Pod
-
+```
 Whenever changes are pushed to Git, Argo CD detects the changes and synchronizes the Kubernetes cluster automatically.
 
 ---
