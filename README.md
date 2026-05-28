@@ -407,7 +407,7 @@ git push
 
 Argo CD will detect the changes and redeploy automatically.
 
-### Update NGINX replicat count
+### Update NGINX replica count.
 
 Modify:
 
@@ -415,11 +415,7 @@ Modify:
 nginx/values.yaml
 ```
 
-Add this line, see below
-
-```yaml
-replicaCount: 3
-```
+Update the replicaCount value to **3**
 
 ```
 service:
