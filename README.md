@@ -442,6 +442,9 @@ git commit -m "Update nginx homepage"
 git push
 ```
 
+Argo CD will detect the changes and redeploy automatically. The pod count will be increase from 1 to 3.
+
+
 ---
 
 # Useful Commands
