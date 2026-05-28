@@ -373,7 +373,9 @@ nginx → Healthy → Synced
 
 ---
 
-# 18. Test GitOps Workflow
+# 18. Test GitOps Workflow 
+
+## Update NGINX index.html
 
 Modify:
 
@@ -404,6 +406,45 @@ git push
 ```
 
 Argo CD will detect the changes and redeploy automatically.
+
+### Update NGINX replicat count
+
+Modify:
+
+```text
+nginx/values.yaml
+```
+
+Add this line, see below
+
+```yaml
+replicaCount: 3
+```
+
+```
+service:
+  type: ClusterIP
+
+replicaCount: 3 # <-- Change this number here
+
+serverBlock: |
+  server {
+    listen 0.0.0.0:8080;
+    location / {
+      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD</h1></body></html>';
+    }
+  }
+```
+
+Commit and push:
+
+```bash
+git add .
+
+git commit -m "Update nginx homepage"
+
+git push
+```
 
 ---
 
