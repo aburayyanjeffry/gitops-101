@@ -1,12 +1,57 @@
-ervice:
-  type: ClusterIP
-
 replicaCount: 1
 
+## 1. Fix the Nginx Server Block (Listen on port 8080)
 serverBlock: |
   server {
     listen 0.0.0.0:8080;
     location / {
+      default_type text/html;  # Forces the browser to render it as HTML text
       return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD</h1></body></html>';
     }
   }
+
+## 2. Crucial Step: Tell the Helm chart container and service to target port 8080
+containerPorts:
+  http: 8080
+
+service:
+  ports:
+    http: 80
+  targetPort: http
+
+## 3. Fix the "Rolling Tag" Warnings (Pinning immutable versions)
+image:
+  registry: docker.io
+  repository: bitnami/nginx
+  tag: 1.27.0-debian-12-r11 # Specify an exact version tag instead of latest
+  pullPolicy: IfNotPresent
+
+cloneStaticSiteFromGit:
+  gitSync:
+    image:
+      registry: docker.io
+      repository: bitnami/git
+      tag: 2.45.1-debian-12-r2
+    # Ensure resources are set if this block is initialized
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+metrics:
+  image:
+    registry: docker.io
+    repository: bitnami/nginx-exporter
+    tag: 1.1.0-debian-12-r12
+
+## 4. Fix the "Resources" Warning
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
