@@ -9,7 +9,7 @@ serverBlock: |
     listen 0.0.0.0:8080;
     location / {
       default_type text/html;
-      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD</h1></body></html>';
+      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD Update 1</h1></body></html>';
     }
   }
 
