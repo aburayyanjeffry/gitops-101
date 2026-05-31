@@ -216,18 +216,25 @@ You should see:
 bitnami/nginx
 ```
 
+# 11.  Pull and untar the Nginx chart files directly into a new folder
+```bash
+helm pull bitnami/nginx --untar --untardir ./charts
+```
+
 ---
 
-# 11. Create GitOps Repository Structure
+# 11. GitOps Repository Structure
 
-Recommended structure:
+The repository layout will now look like this:
 
 ```text
 gitops-101/
-├── nginx/
-│   ├── values.yaml
-│   └── application.yaml
-└── README.md
+└── charts/
+    └── nginx/
+        ├── Chart.yaml
+        ├── values.yaml
+        ├── templates/
+        └── ...
 ```
 
 ---
