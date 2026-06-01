@@ -216,7 +216,12 @@ You should see:
 bitnami/nginx
 ```
 
-# 11.  Pull and untar the Nginx chart files directly into a new folder
+# 11.  Create a directory and pull the Nginx chart 
+
+```bash
+mkdir gitops-101 && cd gitops-101
+```
+
 ```bash
 helm pull bitnami/nginx --untar --untardir ./charts
 ```
@@ -243,44 +248,66 @@ gitops-101/
 
 Create:
 
-```text
-nginx/values.yaml
+```bash
+charts/nginx/my-values.yaml
 ```
 
 Example:
 
 ```yaml
-service:
-  type: ClusterIP
-
 replicaCount: 1
 
+## 1. Force the chart to bypass the default Nginx index/server block setup
+serverBlockConfigMap: "custom-server-block"
+
+## 2. Define your actual custom block here
 serverBlock: |
   server {
     listen 0.0.0.0:8080;
     location / {
-      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD</h1></body></html>';
+      default_type text/html;
+      return 200 '<html><body><h1>Hello from Bitnami NGINX via Argo CD Update 1</h1></body></html>';
     }
   }
+
+## 3. Keep your ports matching
+containerPorts:
+  http: 8080
+
+service:
+  ports:
+    http: 80
+  targetPort:
+    http: http
 ```
 
 This overrides the default NGINX configuration.
 
 ---
 
+# 13. Setup Github repository
+
+Initialize a new local Git repository
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+```
+
 # 13. Test Install Locally
 
-Install the chart manually first:
-
-```bash
-helm install nginx bitnami/nginx -f nginx/values.yaml
+Install the chart
+bash```
+kubectl create namespace nginx-test
+helm install my-nginx-test ./charts/nginx -n nginx-test -f ./charts/nginx/my-values.yaml
 ```
 
 Verify:
 
 ```bash
-kubectl get pods
-kubectl get svc
+kubectl get all -n nginx-test
+helm list -A
+kubectl port-forward svc/my-nginx-test 8080:80 -n nginx-test
 ```
 
 ---
