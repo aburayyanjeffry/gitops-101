@@ -305,9 +305,8 @@ helm install my-nginx-test ./charts/nginx -n nginx-test -f ./charts/nginx/my-val
 Verify:
 
 ```bash
-kubectl get all -n nginx-test
 helm list -A
-kubectl port-forward svc/my-nginx-test 8080:80 -n nginx-test
+kubectl get all -n nginx-test
 ```
 
 ---
@@ -315,7 +314,7 @@ kubectl port-forward svc/my-nginx-test 8080:80 -n nginx-test
 # 14. Port Forward NGINX
 
 ```bash
-kubectl port-forward svc/nginx 8081:80
+kubectl port-forward svc/my-nginx-test 8081:80 -n nginx-test
 ```
 
 Open:
@@ -330,9 +329,11 @@ Hello from Bitnami NGINX via Argo CD
 
 # 15. Push Repository to GitHub
 
-Repository:
-
+Go to https://github.com and create an empty repository. Get the repository URL  
+eg:
+```
 https://github.com/aburayyanjeffry/gitops-101
+```
 
 Push changes:
 
