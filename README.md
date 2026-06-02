@@ -219,7 +219,7 @@ bitnami/nginx
 # 11.  Create a directory and pull the Nginx chart 
 
 ```bash
-mkdir gitops-101 && cd gitops-101
+mkdir k8s-gitops && cd k8s-gitops
 ```
 
 ```bash
@@ -233,7 +233,7 @@ helm pull bitnami/nginx --untar --untardir ./charts
 The repository layout will now look like this:
 
 ```text
-gitops-101/
+k8s-gitops/
 └── charts/
     └── nginx/
         ├── Chart.yaml
@@ -297,7 +297,7 @@ git commit -m "Initial commit"
 # 13. Test Install Locally
 
 Install the chart
-bash```
+```bash
 kubectl create namespace nginx-test
 helm install my-nginx-test ./charts/nginx -n nginx-test -f ./charts/nginx/my-values.yaml
 ```
@@ -329,25 +329,12 @@ Hello from Bitnami NGINX via Argo CD
 
 # 15. Push Repository to GitHub
 
-Go to https://github.com and create an empty repository. Get the repository URL  
-eg:
-```
-https://github.com/aburayyanjeffry/gitops-101
-```
+Go to https://github.com and create an empty repository. Then push changes. The guide is provided when you have created the repo.
 
-Push changes:
-
+Example: 
 ```bash
-git init
-
-git add .
-
-git commit -m "Add Bitnami nginx chart"
-
+git remote add origin git@github.com:aburayyanjeffry/k8s-gitops.git
 git branch -M main
-
-git remote add origin https://github.com/aburayyanjeffry/gitops-101.git
-
 git push -u origin main
 ```
 
@@ -355,10 +342,14 @@ git push -u origin main
 
 # 16. Create Argo CD Application
 
-Create:
+Create agrocd directory
+```bash
+mkdir agrocd
+```
 
+Create agrocd manifest for the application
 ```text
-nginx/application.yaml
+agrocd/application.yaml
 ```
 
 Content:
@@ -434,9 +425,7 @@ Commit and push:
 
 ```bash
 git add .
-
 git commit -m "Update nginx homepage"
-
 git push
 ```
 
@@ -452,7 +441,7 @@ nginx/values.yaml
 
 Update the replicaCount value to **3**
 
-```
+```yaml
 service:
   type: ClusterIP
 
@@ -493,7 +482,7 @@ kubectl get all
 ## List Helm Releases
 
 ```bash
-helm list
+helm list -A
 ```
 
 ## List Helm Repositories
